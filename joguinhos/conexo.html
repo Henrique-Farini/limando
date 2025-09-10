@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conexo Extremo</title>
+    <style>
+        :root {
+            --color-bg: #121212;
+            --color-text: #E0E0E0;
+            --color-card-bg: #333333;
+            --color-card-selected: #565758;
+            --color-card-border: #818384;
+            --color-button-bg: #444444;
+            --color-button-hover: #555555;
+            --font-size: 1.2em;
+
+            /* Novas Cores de Dificuldade */
+            --color-easy: #538d4e;       /* Verde */
+            --color-medium: #b59f3b;     /* Amarelo */
+            --color-hard: #b05e5e;       /* Vermelho */
+            --color-very-hard: #813b3b;  /* Vinho */
+            --color-extreme: #6a0dad;    /* Roxo */
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background-color: var(--color-bg);
+            color: var(--color-text);
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        #game-container {
+            max-width: 600px;
+            width: 100%;
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        #game-board {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background-color: var(--color-card-bg);
+            color: var(--color-text);
+            padding: 20px 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            user-select: none;
+            text-transform: uppercase;
+            font-weight: bold;
+            font-size: 1em;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            transition: transform 0.2s, background-color 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        .card:not(.correct):hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .card.selected {
+            background-color: var(--color-card-selected);
+        }
+
+        .category-group {
+            color: var(--color-text);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            font-weight: bold;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            animation: fadeIn 0.8s ease-out;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        .category-group.easy { background-color: var(--color-easy); }
+        .category-group.medium { background-color: var(--color-medium); }
+        .category-group.hard { background-color: var(--color-hard); }
+        .category-group.very-hard { background-color: var(--color-very-hard); }
+        .category-group.extreme { background-color: var(--color-extreme); }
+        
+        .category-group .category-name {
+            font-size: 1.1em;
+            text-transform: uppercase;
+        }
+
+        .category-group .category-words {
+            font-size: 0.9em;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        #message {
+            margin-top: 10px;
+            font-weight: bold;
+            height: 20px;
+            opacity: 0;
+            transition: opacity 0.5s;
+            text-align: center;
+        }
+
+        #message.show {
+            opacity: 1;
+        }
+        
+        #buttons-container {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .game-button {
+            padding: 12px 24px;
+            font-size: 1em;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            border: none;
+            color: var(--color-text);
+            background-color: var(--color-button-bg);
+            transition: background-color 0.2s, transform 0.1s, opacity 0.3s;
+        }
+
+        .game-button:hover {
+            background-color: var(--color-button-hover);
+        }
+
+        #submit-button {
+            background-color: var(--color-easy);
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        #submit-button.active {
+            opacity: 1;
+            cursor: pointer;
+        }
+        
+        #submit-button.active:hover {
+            background-color: #63a05e;
+        }
+
+        #new-game-button {
+            display: none;
+            background-color: var(--color-easy);
+            margin-top: 20px;
+        }
+
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 2em;
+            }
+            .card {
+                font-size: 0.9em;
+                padding: 15px 5px;
+            }
+            .game-button {
+                padding: 10px 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <h1>Conexo Extremo</h1>
+        <div id="game-board"></div>
+        <div id="message"></div>
+        <div id="buttons-container">
+            <button id="submit-button" class="game-button">Enviar</button>
+            <button id="shuffle-button" class="game-button">Embaralhar</button>
+        </div>
+        <button id="new-game-button" class="game-button">Novo Jogo</button>
+    </div>
+
+    <script>
+        const allCategories = [
+            // Categoria Fácil
+            { category: 'CIDADES BRASILEIRAS', words: ['SÃO PAULO', 'RIO', 'BELO HORIZONTE', 'RECIFE'], difficulty: 'easy' },
+            { category: 'ELEMENTOS DA NATUREZA', words: ['ÁGUA', 'TERRA', 'AR', 'FOGO'], difficulty: 'easy' },
+            { category: 'SENTIDOS', words: ['VISÃO', 'OLFATO', 'AUDIÇÃO', 'PALADAR'], difficulty: 'easy' },
+            
+            // Categoria Média
+            { category: 'TERMOS DE JOGOS', words: ['FANTASIA', 'ESTRATÉGIA', 'AVENTURA', 'SIMULAÇÃO'], difficulty: 'medium' },
+            { category: 'SUBSTÂNCIAS VICIANTES', words: ['TABACO', 'ÁLCOOL', 'CAFEÍNA', 'NICOTINA'], difficulty: 'medium' },
+            { category: 'PARTES DO CORPO', words: ['TÍBIA', 'FÊMUR', 'CRÂNIO', 'CORAÇÃO'], difficulty: 'medium' },
+
+            // Categoria Difícil
+            { category: 'VERBOS NO PASSADO', words: ['COMEU', 'BEBEU', 'VIU', 'OUVIU'], difficulty: 'hard' },
+            { category: 'CONCEITOS DE FILOSOFIA', words: ['VERDADE', 'EXISTÊNCIA', 'LÓGICA', 'ÉTICA'], difficulty: 'hard' },
+            { category: 'TERMOS RELACIONADOS A JORNALISMO', words: ['NOTÍCIA', 'REPORTAGEM', 'ARTIGO', 'TESE'], difficulty: 'hard' },
+            
+            // Categoria Muito Difícil
+            { category: 'SINÔNIMOS PARA "RÁPIDO"', words: ['VELOZ', 'CÉLERE', 'LÉPIDO', 'EXPEDITO'], difficulty: 'very-hard' },
+            { category: 'TERMOS DE PROGRAMAÇÃO', words: ['ALGORITMO', 'LOOP', 'VARIÁVEL', 'FUNÇÃO'], difficulty: 'very-hard' },
+            { category: 'PERSONAGENS DE MITOLOGIA GREGA', words: ['ZEUS', 'HERA', 'HADES', 'POSEIDON'], difficulty: 'very-hard' },
+            
+            // Categoria Extrema
+            { category: 'PALAVRAS HOMÓFONAS', words: ['CESSÃO', 'SEÇÃO', 'CENA', 'SENA'], difficulty: 'extreme' },
+            { category: 'CONCEITOS DE ARTE', words: ['IMPRESSIONISMO', 'CUBISMO', 'SURREALISMO', 'ROMANTISMO'], difficulty: 'extreme' },
+            { category: 'COMPOSITORES CLÁSSICOS', words: ['BACH', 'MOZART', 'BEETHOVEN', 'VIVALDI'], difficulty: 'extreme' },
+            { category: 'TIPOS DE CHÁS', words: ['MATCHA', 'OOLONG', 'ROOIBOS', 'SENCHA'], difficulty: 'extreme' }
+        ];
+
+        const gameBoard = document.getElementById('game-board');
+        const submitButton = document.getElementById('submit-button');
+        const shuffleButton = document.getElementById('shuffle-button');
+        const newGameButton = document.getElementById('new-game-button');
+        const messageDisplay = document.getElementById('message');
+
+        let selectedCards = [];
+        let activeCategories = [];
+        let correctWords = [];
+        let availableCategories = [...allCategories];
+
+        const audioCorrect = new Audio('data:audio/wav;base64,UklGRl9QAAAXWCHYDwEAAASgEAC5bQASq0EABxAAIAECAABAAAAAABAAEAIAACAAAAAAAABQAAAgAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=');
+        const audioIncorrect = new Audio('data:audio/wav;base64,UklGRl9QAAAXWCHYDwEAAASgEAC5bQASq0EABxAAIAECAABAAAAAABAAEAIAACAAAAAAAABQAAAgAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=');
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function startGame() {
+            selectedCards = [];
+            correctWords = [];
+            gameBoard.innerHTML = '';
+            messageDisplay.textContent = '';
+            messageDisplay.classList.remove('show');
+            submitButton.style.display = 'block';
+            submitButton.classList.remove('active');
+            submitButton.disabled = true;
+            shuffleButton.style.display = 'block';
+            newGameButton.style.display = 'none';
+
+            if (availableCategories.length < 4) {
+                availableCategories = [...allCategories];
+            }
+            
+            shuffleArray(availableCategories);
+            activeCategories = availableCategories.splice(0, 4);
+
+            let allWords = activeCategories.flatMap(cat => cat.words);
+            shuffleArray(allWords);
+
+            allWords.forEach(word => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.textContent = word;
+                card.addEventListener('click', () => handleCardClick(card));
+                gameBoard.appendChild(card);
+            });
+        }
+
+        function handleCardClick(card) {
+            if (correctWords.includes(card.textContent)) return;
+
+            card.classList.toggle('selected');
+            selectedCards = Array.from(document.querySelectorAll('.card.selected'));
+            
+            if (selectedCards.length === 4) {
+                submitButton.classList.add('active');
+                submitButton.disabled = false;
+            } else {
+                submitButton.classList.remove('active');
+                submitButton.disabled = true;
+            }
+        }
+
+        function checkSelection() {
+            if (selectedCards.length !== 4) {
+                showMessage('Selecione 4 palavras.');
+                return;
+            }
+
+            const selectedWords = selectedCards.map(card => card.textContent).sort();
+            
+            let isCorrect = false;
+            let correctCategory = null;
+
+            for (const cat of activeCategories) {
+                const catWordsSorted = cat.words.sort();
+                if (JSON.stringify(selectedWords) === JSON.stringify(catWordsSorted)) {
+                    isCorrect = true;
+                    correctCategory = cat;
+                    break;
+                }
+            }
+
+            if (isCorrect) {
+                audioCorrect.play();
+                showMessage('Grupo encontrado!', true);
+                revealGroup(selectedCards, correctCategory);
+                checkWinCondition();
+            } else {
+                audioIncorrect.play();
+                showMessage('Tente novamente.');
+                selectedCards.forEach(card => card.classList.remove('selected'));
+                selectedCards = [];
+            }
+            
+            submitButton.classList.remove('active');
+            submitButton.disabled = true;
+        }
+
+        function revealGroup(cards, category) {
+            const revealedGroup = document.createElement('div');
+            revealedGroup.className = `category-group ${category.difficulty}`;
+            revealedGroup.innerHTML = `
+                <div class="category-name">${category.category}</div>
+                <div class="category-words">${category.words.join(', ')}</div>
+            `;
+            
+            cards.forEach(card => {
+                card.classList.remove('selected');
+                card.style.display = 'none';
+                correctWords.push(card.textContent);
+            });
+            
+            gameBoard.prepend(revealedGroup);
+            
+            const allCurrentCards = Array.from(gameBoard.children);
+            const remainingCards = allCurrentCards.filter(card => !card.classList.contains('category-group'));
+            
+            gameBoard.innerHTML = '';
+            gameBoard.append(...allCurrentCards.filter(c => c.classList.contains('category-group')));
+            
+            shuffleArray(remainingCards);
+            gameBoard.append(...remainingCards);
+            
+            selectedCards = [];
+        }
+
+        function showMessage(msg, isSuccess = false) {
+            messageDisplay.textContent = msg;
+            messageDisplay.style.color = isSuccess ? '#538d4e' : '#FFFFFF';
+            messageDisplay.classList.add('show');
+            setTimeout(() => {
+                messageDisplay.classList.remove('show');
+            }, 1500);
+        }
+
+        function checkWinCondition() {
+            if (correctWords.length === 16) {
+                endGame();
+            }
+        }
+
+        function endGame() {
+            showMessage('Parabéns, você venceu!');
+            submitButton.style.display = 'none';
+            shuffleButton.style.display = 'none';
+            newGameButton.style.display = 'block';
+        }
+
+        submitButton.addEventListener('click', checkSelection);
+        shuffleButton.addEventListener('click', () => {
+            const remainingCards = Array.from(document.querySelectorAll('.card'));
+            const wordsToShuffle = remainingCards.map(card => card.textContent);
+            shuffleArray(wordsToShuffle);
+            
+            remainingCards.forEach((card, index) => {
+                card.textContent = wordsToShuffle[index];
+                card.classList.remove('selected');
+            });
+
+            selectedCards = [];
+            submitButton.classList.remove('active');
+            submitButton.disabled = true;
+        });
+
+        newGameButton.addEventListener('click', startGame);
+
+        startGame();
+    </script>
+</body>
+</html>

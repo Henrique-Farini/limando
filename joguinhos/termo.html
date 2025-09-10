@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Termo</title>
+    <style>
+        :root {
+            --color-bg: #121213;
+            --color-text: #FFFFFF;
+            --color-border: #3a3a3c;
+            --color-tile-empty: #121213;
+            --color-tile-filled: #565758;
+            --color-correct: #538d4e;
+            --color-present: #b59f3b;
+            --color-absent: #3a3a3c;
+            --color-key-bg: #818384;
+            --color-key-bg-dark: #565758;
+            --tile-size: 62px;
+            --font-size: 2.5em;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background-color: var(--color-bg);
+            color: var(--color-text);
+            margin: 0;
+            text-align: center;
+        }
+
+        #main-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            padding: 20px;
+        }
+
+        h1 {
+            font-size: 3em;
+            letter-spacing: 0.1em;
+            margin: 0;
+            text-transform: uppercase;
+        }
+
+        #game-board {
+            display: grid;
+            grid-template-rows: repeat(6, var(--tile-size));
+            grid-template-columns: repeat(5, var(--tile-size));
+            gap: 5px;
+        }
+
+        .tile {
+            width: var(--tile-size);
+            height: var(--tile-size);
+            border: 2px solid var(--color-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: var(--font-size);
+            font-weight: bold;
+            text-transform: uppercase;
+            box-sizing: border-box;
+            user-select: none;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.6s, border-color 0.2s;
+            background-color: var(--color-tile-empty);
+            cursor: pointer;
+        }
+
+        .tile.active {
+            border-color: var(--color-text);
+        }
+
+        .tile.filled {
+            border-color: var(--color-tile-filled);
+        }
+
+        .tile.correct {
+            background-color: var(--color-correct);
+            border-color: var(--color-correct);
+        }
+
+        .tile.present {
+            background-color: var(--color-present);
+            border-color: var(--color-present);
+        }
+
+        .tile.absent {
+            background-color: var(--color-absent);
+            border-color: var(--color-absent);
+        }
+
+        .row.jump .tile {
+            animation: jump 0.3s forwards;
+            animation-delay: calc(var(--index) * 0.1s);
+        }
+
+        @keyframes jump {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+            100% { transform: translateY(0); }
+        }
+
+        #message {
+            position: fixed;
+            top: 10%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(255, 255, 255, 0.15);
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            opacity: 0;
+            transition: opacity 0.5s, top 0.5s;
+        }
+
+        #message.show {
+            opacity: 1;
+            top: 20%;
+        }
+
+        .keyboard-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            margin-top: 20px;
+        }
+
+        .key-row {
+            display: flex;
+            gap: 6px;
+        }
+
+        .key {
+            background-color: var(--color-key-bg);
+            color: var(--color-text);
+            font-size: 1em;
+            font-weight: bold;
+            padding: 12px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            user-select: none;
+            min-width: 38px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: background-color 0.3s, transform 0.1s, opacity 0.3s;
+        }
+
+        .key.big {
+            padding: 12px 18px;
+        }
+
+        .key:active {
+            transform: scale(0.95);
+        }
+
+        .key.correct {
+            background-color: var(--color-correct);
+            opacity: 1;
+        }
+
+        .key.present {
+            background-color: var(--color-present);
+            opacity: 1;
+        }
+
+        .key.absent {
+            background-color: var(--color-key-bg-dark);
+            opacity: 0.5;
+        }
+
+        #new-game-button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 1.2em;
+            font-weight: bold;
+            background-color: var(--color-correct);
+            color: var(--color-text);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>Termo</h1>
+    <div id="main-container">
+        <div id="game-board"></div>
+        <div class="keyboard-container" id="keyboard"></div>
+        <button id="new-game-button">Novo Jogo</button>
+    </div>
+    <div id="message"></div>
+
+    <script>
+        const allWords = [
+            'ABACÁ', 'ABADE', 'ABAFA', 'ABALA', 'ABANA', 'ABARA', 'ABEIR', 'ABOIO', 'ABOLI', 'ABONA', 'ABRAM', 'ABREM', 'ABRIU', 'ABUSA', 'ACABA', 'ACATA', 'ACHAM', 'ACHAR', 'AÇÕES', 'ACESA', 'ACESS', 'ACHOU', 'ACIMA', 'ADAGA', 'ADMIT', 'ADORA', 'ADUBO', 'AEREO', 'AFASTA', 'AGORA', 'AGUAR', 'AJUDA', 'ALADO', 'ALGAZ', 'ALMAO', 'ALTOA', 'ALMAS', 'ALMOS', 'ALUNA', 'ALVOS', 'AMADA', 'AMARE', 'AMIGO', 'AMPLA', 'AMPLO', 'ANDAR', 'ANDOR', 'ANELZ', 'ANIMA', 'ANUAL', 'APAGA', 'APENA', 'APODO', 'APOIA', 'APOSI', 'AQUEL', 'ARCAS', 'ARMAZ', 'ARREM', 'ARROZ', 'ARTES', 'ASCUA', 'ASSIM', 'ASSOP', 'ATACA', 'ATEAR', 'ATILA', 'ATIR', 'ATRAS', 'ATUAL', 'AUGEA', 'AULAS', 'AURORA', 'AUTOR', 'AVALI', 'AVARO', 'AVOAR', 'AXIAL', 'AZARA', 'AZULI', 'BAETA', 'BAILA', 'BAIXA', 'BAIXO', 'BALAS', 'BALCA', 'BALDE', 'BAMBA', 'BANCA', 'BANDE', 'BANDO', 'BARBA', 'BARCO', 'BARRO', 'BASTA', 'BATEL', 'BATEM', 'BEATA', 'BEIJA', 'BEIJO', 'BEIRA', 'BELAS', 'BELGA', 'BEMOL', 'BENCA', 'BEMTE', 'BENFE', 'BERCO', 'BESTA', 'BETUM', 'BIZAR', 'BLUSA', 'BOBOA', 'BOCAS', 'BOLSO', 'BONAN', 'BONDE', 'BONEC', 'BORDO', 'BORLA', 'BOSSO', 'BOTAS', 'BOTIA', 'BRABA', 'BRADO', 'BRAVO', 'BREJO', 'BROCA', 'BROTA', 'BRUMA', 'BUCHA', 'BUDAI', 'BUEI', 'BULIA', 'BUMBA', 'BUNTE', 'BURAC', 'BUSTO', 'CAAPA', 'CABIA', 'CACAO', 'CACHO', 'CAÇÃO', 'CAIRO', 'CAIRU', 'CALÇA', 'CALMO', 'CALOR', 'CAMPO', 'CANAL', 'CANDI', 'CANHA', 'CANIL', 'CANON', 'CARTA', 'CARRO', 'CASAS', 'CASCO', 'CASTE', 'CASTA', 'CATAR', 'CATIA', 'CAUSA', 'CAXIA', 'CEBOLA', 'CEDRO', 'CEGUE', 'CELIA', 'CENAS', 'CENTI', 'CERCA', 'CERTO', 'CESAR', 'CESTO', 'CEZAR', 'CHAMA', 'CHAVE', 'CHEGA', 'CHEIO', 'CHORO', 'CHUTE', 'CHUVA', 'CIAMA', 'CIDADE', 'CINCO', 'CINTO', 'CISÃO', 'CIVIL', 'CLARO', 'CLAVE', 'CLICO', 'CLIMA', 'COBRA', 'CODAR', 'COISA', 'COLAI', 'COLOA', 'COMIA', 'CONTA', 'CONVO', 'COPIO', 'CORAO', 'CORDA', 'CORNO', 'CORTE', 'COSTA', 'COURO', 'COZIN', 'CREMA', 'CREPE', 'CRESC', 'CRIVO', 'CRUAO', 'CUBRO', 'CUIDA', 'CUIDO', 'CULPA', 'CURIA', 'CURSO', 'CURVA', 'CUSTO', 'DACHA', 'DAILA', 'DAMAO', 'DANCE', 'DEITA', 'DEIXA', 'DENSO', 'DENTI', 'DEZEM', 'DICIA', 'DIGIT', 'DIOGO', 'DITOS', 'DIVAS', 'DIVOS', 'DOBER', 'DOBRA', 'DOCES', 'DOMAR', 'DORES', 'DORSO', 'DOSES', 'DOZEA', 'DRAKE', 'DROGA', 'DUELA', 'DUQUE', 'DUPLA', 'DURMA', 'DURAS', 'EBANO', 'EBENE', 'EFEIT', 'EGITO', 'EIXOS', 'ELITE', 'ELMAS', 'ELOIS', 'ELVIRA', 'EMAIS', 'EMBIA', 'EMBRE', 'EMITE', 'EMULA', 'ENCAI', 'ENDIV', 'ENFAS', 'ENTER', 'ENVID', 'ENVIO', 'EPOCA', 'EQUIL', 'ERGAI', 'ERRAI', 'ERRAR', 'ESCAL', 'ESPAI', 'ESTAS', 'ESTAO', 'EXAME', 'EXATO', 'EXCEL', 'FACIL', 'FAZEM', 'FAZER', 'FALAR', 'FALSA', 'FALSO', 'FALTA', 'FAROL', 'FATAL', 'FATIA', 'FATOA', 'FAUNA', 'FAZIA', 'FECHA', 'FELIZ', 'FEMIN', 'FERRO', 'FERVE', 'FESTA', 'FEZES', 'FIADO', 'FIELB', 'FILME', 'FINAL', 'FINCA', 'FINTO', 'FIXEI', 'FIXOU', 'FLORA', 'FOLHA', 'FORMA', 'FORTE', 'FORÇA', 'FORRO', 'FOSSO', 'FRADE', 'FRACO', 'FREIA', 'FREAM', 'FRETA', 'FRIAS', 'FRISO', 'FUNDO', 'FUNIL', 'FURIA', 'FURIA', 'FUTUR', 'GAIAI', 'GALHO', 'GANHA', 'GANSO', 'GATOS', 'GENTE', 'GELO', 'GEMAS', 'GENIO', 'GIRAR', 'GIRIA', 'GOLFO', 'GOLOS', 'GRAVA', 'GRITA', 'GROSS', 'GUIAO', 'GUITA', 'GURIA', 'GURUS', 'HABIL', 'HACHA', 'HARAS', 'HASTE', 'HEBRA', 'HELEN', 'HELOI', 'HUMAN', 'IDEAL', 'ILHAS', 'ILIAS', 'IMAGI', 'IMAGEM', 'IMPEC', 'IMPIO', 'IMPOR', 'INCHA', 'INCIA', 'INDOA', 'INDOO', 'INFIM', 'INFOR', 'INGEA', 'INGRE', 'INIMA', 'INSET', 'INTIM', 'INVEN', 'IRADO', 'IRIAR', 'IRMOS', 'ISOLA', 'ITERA', 'IXIAI', 'JACAS', 'JAMBO', 'JANGO', 'JANGO', 'JANTE', 'JAPAO', 'JAPAS', 'JAULA', 'JAZIA', 'JEANS', 'JOGAR', 'JOIAS', 'JOLIA', 'JOAIA', 'JOANA', 'JORRA', 'JUDIA', 'JULIA', 'JUMEN', 'JURAS', 'JURAR', 'JURIA', 'JUNTO', 'LAÇAR', 'LAGES', 'LAGOA', 'LAICO', 'LAMES', 'LAMPI', 'LAPIA', 'LAPIS', 'LARAN', 'LARGA', 'LASCA', 'LATAO', 'LATIM', 'LAVAR', 'LAVOU', 'LEBR', 'LEGAL', 'LEMBR', 'LENDO', 'LENTA', 'LENGO', 'LEQUE', 'LETAL', 'LEVAO', 'LEVEA', 'LEXUS', 'LIÇAO', 'LIGAR', 'LIMBO', 'LIMIA', 'LIMPA', 'LINHA', 'LIRAO', 'LISTA', 'LITRO', 'LIVRO', 'LIXAO', 'LIXO', 'LOBAS', 'LOUCO', 'LUCAS', 'LUCIA', 'LUGAR', 'LUMIA', 'LUTAR', 'LUXAS', 'LUZES', 'MADRE', 'MAGIA', 'MAGOS', 'MAIOR', 'MAIS', 'MALAS', 'MALHO', 'MANGA', 'MANIA', 'MANTO', 'MAQUI', 'MARCA', 'MARTE', 'MARTA', 'MASSI', 'MASTA', 'MATAO', 'MATAS', 'MATEM', 'MAZAS', 'MEIAI', 'MEIOS', 'MELAO', 'MENOS', 'MENTA', 'MENTE', 'MERCA', 'MESMO', 'MESTRE', 'METRO', 'MIAIS', 'MIGRA', 'MILHO', 'MINHA', 'MINHO', 'MINAS', 'MINUS', 'MIRAR', 'MISSA', 'MITO', 'MIXTO', 'MODAS', 'MOELA', 'MOGNO', 'MOLDE', 'MOLHO', 'MONTE', 'MORRO', 'MORTO', 'MOTOS', 'MOVEL', 'MUDAR', 'MUDAS', 'MUDO', 'MUIRO', 'MUNDO', 'MURAL', 'MUSAO', 'MUSAS', 'MUSEU', 'NABOS', 'NAÇAO', 'NADAR', 'NAIPE', 'NAZIA', 'NEGLI', 'NEMEM', 'NESSE', 'NESSO', 'NESTA', 'NESTO', 'NINAR', 'NISSO', 'NOBRE', 'NOITE', 'NOTAR', 'NOTIC', 'NOVOS', 'NUMER', 'OBESA', 'OBESO', 'OBRAO', 'OBRAS', 'OCIAN', 'OCUPA', 'ODIO', 'OESTE', 'OFERT', 'OGIVA', 'OLHAR', 'OLHOS', 'OLIVO', 'OMBRO', 'ONDAI', 'ONDEI', 'OPOIA', 'OPERA', 'OPINIA', 'OPORR', 'ORCAO', 'ORDEN', 'OREIA', 'ORGAL', 'ORLAO', 'ORNAI', 'ORTOR', 'OSSO', 'OUÇAS', 'OVOO', 'OVOO', 'OUREO', 'OURIA', 'PACHA', 'PADRE', 'PAGAS', 'PAIAI', 'PAIRO', 'PAIXAO', 'PALMA', 'PALMO', 'PALIO', 'PANOS', 'PAREO', 'PARIR', 'PARTE', 'PARVO', 'PASSAR', 'PASSE', 'PASSO', 'PATAS', 'PATOS', 'PAULA', 'PAUSA', 'PECAI', 'PEDIA', 'PEDRO', 'PEDRO', 'PEGAI', 'PEGAO', 'PELEI', 'PELOS', 'PENDO', 'PENTE', 'PEPIN', 'PEQUE', 'PERCA', 'PERDI', 'PERDE', 'PERNA', 'PESAR', 'PESCA', 'PESO', 'PESTO', 'PICOS', 'PILHA', 'PINCE', 'PINHO', 'PINTO', 'PISTA', 'PLANO', 'PLACA', 'POEMA', 'POESA', 'POICA', 'POISE', 'POLIA', 'PONTA', 'PONTE', 'PORTO', 'POSAO', 'POVO', 'PRACA', 'PRAIA', 'PRAGA', 'PRETO', 'PRIME', 'PROCA', 'PROVA', 'PROVO', 'PUBLI', 'PUCHA', 'PUCHO', 'PULAO', 'PUNHA', 'PURAS', 'PUTAS', 'PUTO', 'QUEDA', 'QUEIA', 'QUEIM', 'QUILO', 'QUITA', 'RACHA', 'RADAR', 'RADIO', 'RAIO', 'RAMPA', 'RAMOS', 'RANCO', 'RANHO', 'RASTA', 'RATOO', 'REAL', 'RECEM', 'REGUA', 'REINA', 'REINO', 'RELAO', 'REMAS', 'REMOS', 'RENTE', 'REPET', 'RESPE', 'RESTA', 'RETOR', 'REUN', 'RICAS', 'RICOS', 'RIFLE', 'RINHA', 'ROBBO', 'ROBER', 'ROCA', 'ROCHA', 'RODEO', 'ROLHA', 'RONCA', 'ROSAO', 'ROUPA', 'RUIA', 'RUIVA', 'RUIDO', 'RUINA', 'RUIVO', 'RURAI', 'SABIA', 'SABIO', 'SABOA', 'SABOR', 'SACAS', 'SACOS', 'SAIDA', 'SALAS', 'SALGA', 'SALTA', 'SALVE', 'SAMBA', 'SAMOS', 'SANTA', 'SANTO', 'SARGA', 'SAUNA', 'SAVIA', 'SCAVO', 'SECAR', 'SECOS', 'SEDA', 'SEDAS', 'SEITA', 'SELOA', 'SELOS', 'SENDE', 'SENOS', 'SENTI', 'SERIO', 'SERRO', 'SERVI', 'SESTO', 'SETEM', 'SEXTA', 'SINAL', 'SIRVA', 'SISTE', 'SOBRE', 'SOCIAL', 'SOFIA', 'SOLAR', 'SOLDO', 'SONDA', 'SONHO', 'SONOS', 'SORGO', 'SORTE', 'SOSO', 'SOZIN', 'SUADO', 'SUGAR', 'SUITE', 'SULCA', 'SUMA', 'SURDO', 'SURTO', 'TABUA', 'TAIPA', 'TALHA', 'TALIA', 'TAMPA', 'TANGI', 'TARDE', 'TARIM', 'TASCA', 'TAXI', 'TAZIA', 'TEIMA', 'TEIMO', 'TEMAS', 'TENDE', 'TENSO', 'TERRA', 'TERMO', 'TERNO', 'TETOS', 'TEXTO', 'TIDIO', 'TIMAO', 'TINGI', 'TINHA', 'TINTA', 'TIRAR', 'TOCAS', 'TOCAI', 'TODAS', 'TODOS', 'TOQUE', 'TORRE', 'TORTA', 'TRAMA', 'TRATA', 'TRAVO', 'TRAJE', 'TREME', 'TREVO', 'TROCA', 'TRONO', 'TRUPE', 'TUFÃO', 'TULIPA', 'TUMOR', 'TURMA', 'TURNO', 'TUITA', 'ULULA', 'UMIDO', 'UNIAO', 'UNICA', 'UNICO', 'URBIA', 'URGIR', 'URSAO', 'URSOS', 'VAGAO', 'VAGAS', 'VAIA', 'VALOR', 'VALOS', 'VAMOS', 'VARAS', 'VARIA', 'VASTA', 'VASTO', 'VazIO', 'VELAS', 'VELHA', 'VELHO', 'VENDE', 'VENIA', 'VERBA', 'VERDE', 'VERME', 'VERSO', 'VESTI', 'VEZES', 'VIAJA', 'VIDAS', 'VIDRO', 'VIGIA', 'VILAO', 'VINHA', 'VIRAO', 'VISTO', 'VITRE', 'VITOR', 'VIVIA', 'VOAVA', 'VOÇE', 'VOLTA', 'VOTAR', 'XERIA', 'XINGA', 'ZARPA', 'ZELAR', 'ZONZA'
+        ];
+        let wordToGuess;
+        const gameBoard = document.getElementById('game-board');
+        const keyboard = document.getElementById('keyboard');
+        const messageDisplay = document.getElementById('message');
+        const newGameButton = document.getElementById('new-game-button');
+
+        const keyStatus = {};
+        let currentRow;
+        let currentGuess;
+        let isGameOver;
+        let activeTileIndex;
+        let isCheckingGuess;
+        let messageTimeout;
+
+        const keyboardLayout = [
+            'QWERTYUIOP'.split(''),
+            'ASDFGHJKL'.split(''),
+            ['ENTER', ...'ZXCVBNM'.split(''), 'DEL']
+        ];
+
+        function resetGame() {
+            currentRow = 0;
+            currentGuess = ['', '', '', '', ''];
+            isGameOver = false;
+            isCheckingGuess = false;
+            
+            wordToGuess = allWords[Math.floor(Math.random() * allWords.length)];
+
+            gameBoard.innerHTML = '';
+            initializeBoard(gameBoard);
+            
+            setActiveTile(0);
+
+            const keys = document.querySelectorAll('.key');
+            keys.forEach(key => key.classList.remove('correct', 'present', 'absent'));
+            for (const key in keyStatus) {
+                delete keyStatus[key];
+            }
+
+            messageDisplay.classList.remove('show');
+            newGameButton.style.display = 'none';
+        }
+
+        function initializeBoard(board) {
+            for (let i = 0; i < 30; i++) {
+                const cell = document.createElement('div');
+                cell.classList.add('tile');
+                cell.dataset.index = i;
+                cell.addEventListener('click', () => {
+                    if (!isCheckingGuess && !isGameOver) {
+                        setActiveTile(i);
+                    }
+                });
+                board.appendChild(cell);
+            }
+        }
+
+        function initializeKeyboard() {
+            keyboardLayout.forEach(row => {
+                const rowDiv = document.createElement('div');
+                rowDiv.classList.add('key-row');
+                row.forEach(key => {
+                    const keyDiv = document.createElement('div');
+                    keyDiv.classList.add('key');
+                    keyDiv.textContent = key;
+                    if (key === 'ENTER' || key === 'DEL') {
+                        keyDiv.classList.add('big');
+                    }
+                    keyDiv.dataset.key = key;
+                    rowDiv.appendChild(keyDiv);
+                });
+                keyboard.appendChild(rowDiv);
+            });
+        }
+
+        function setActiveTile(index) {
+            const tilesInRow = Array.from(gameBoard.children).slice(currentRow * 5, currentRow * 5 + 5);
+            
+            tilesInRow.forEach(tile => tile.classList.remove('active'));
+
+            if (index >= currentRow * 5 && index < (currentRow + 1) * 5) {
+                gameBoard.children[index].classList.add('active');
+            }
+            
+            activeTileIndex = index;
+        }
+
+        function updateBoard() {
+            const tiles = gameBoard.children;
+            const startTileIndex = currentRow * 5;
+            
+            for (let i = 0; i < 5; i++) {
+                const tileIndex = startTileIndex + i;
+                
+                tiles[tileIndex].textContent = currentGuess[i] || '';
+                if (currentGuess[i]) {
+                    tiles[tileIndex].classList.add('filled');
+                } else {
+                    tiles[tileIndex].classList.remove('filled');
+                }
+            }
+        }
+
+        function showMessage(message, duration = 1500) {
+            messageDisplay.textContent = message;
+            messageDisplay.classList.add('show');
+            clearTimeout(messageTimeout);
+            messageTimeout = setTimeout(() => {
+                messageDisplay.classList.remove('show');
+            }, duration);
+        }
+
+        function checkGuess() {
+            if (isCheckingGuess || isGameOver) return; 
+
+            const tiles = gameBoard.children;
+            const fullGuess = currentGuess.join('');
+            
+            if (fullGuess.length !== 5) {
+                showMessage('A palavra deve ter 5 letras!');
+                return;
+            }
+
+            isCheckingGuess = true; 
+            const guessArray = fullGuess.split('');
+            
+            let letterStatus = new Array(5).fill('absent');
+            const wordToArray = wordToGuess.split('');
+            const tempWord = [...wordToArray];
+            
+            for (let i = 0; i < 5; i++) {
+                if (guessArray[i] === tempWord[i]) {
+                    letterStatus[i] = 'correct';
+                    tempWord[i] = null;
+                }
+            }
+            for (let i = 0; i < 5; i++) {
+                if (letterStatus[i] === 'absent') {
+                    const foundIndex = tempWord.indexOf(guessArray[i]);
+                    if (foundIndex !== -1) {
+                        letterStatus[i] = 'present';
+                        tempWord[foundIndex] = null;
+                    }
+                }
+            }
+            
+            const startTileIndex = currentRow * 5;
+            for (let i = 0; i < 5; i++) {
+                setTimeout(() => {
+                    const tile = tiles[startTileIndex + i];
+                    tile.classList.remove('filled', 'active');
+                    tile.classList.add(letterStatus[i]);
+
+                    const keyDiv = document.querySelector(`.key[data-key="${guessArray[i]}"]`);
+                    if (keyDiv) {
+                        const finalStatus = letterStatus[i];
+                        const currentKeyStatus = keyStatus[guessArray[i]] || 'absent';
+                        if (currentKeyStatus === 'correct') {
+                            return;
+                        } else if (currentKeyStatus === 'present' && finalStatus === 'absent') {
+                            return;
+                        } else {
+                            keyDiv.classList.remove('correct', 'present', 'absent');
+                            keyDiv.classList.add(finalStatus);
+                            keyStatus[guessArray[i]] = finalStatus;
+                        }
+                    }
+                }, i * 300);
+            }
+
+            if (fullGuess === wordToGuess) {
+                setTimeout(() => {
+                    isCheckingGuess = false;
+                    endGame(true);
+                }, 1800);
+            } else {
+                setTimeout(() => {
+                    currentRow++;
+                    currentGuess = ['', '', '', '', ''];
+                    isCheckingGuess = false;
+                    if (currentRow === 6) {
+                        endGame(false);
+                    } else {
+                        setActiveTile(currentRow * 5);
+                    }
+                }, 1800);
+            }
+        }
+
+        function endGame(isWinner) {
+            isGameOver = true;
+            if (isWinner) {
+                showMessage('Parabéns! Você acertou a palavra!');
+            } else {
+                showMessage(`A palavra era: ${wordToGuess}`);
+            }
+            newGameButton.style.display = 'block';
+        }
+
+        function handleInput(key) {
+            if (isGameOver || isCheckingGuess) return;
+            
+            const startOfRow = currentRow * 5;
+            const endOfRow = startOfRow + 4;
+            
+            if (key === 'ENTER') {
+                checkGuess();
+            } else if (key === 'DEL' || key === 'BACKSPACE') {
+                if (activeTileIndex >= startOfRow) {
+                    currentGuess[activeTileIndex - startOfRow] = '';
+                    updateBoard();
+                    if (activeTileIndex > startOfRow) {
+                        setActiveTile(activeTileIndex - 1);
+                    } else {
+                        setActiveTile(startOfRow);
+                    }
+                }
+            } else if (key === 'ARROWLEFT') {
+                if (activeTileIndex > startOfRow) {
+                    setActiveTile(activeTileIndex - 1);
+                }
+            } else if (key === 'ARROWRIGHT') {
+                if (activeTileIndex < endOfRow) {
+                    setActiveTile(activeTileIndex + 1);
+                }
+            } else if (key === 'ARROWUP') {
+                if (activeTileIndex >= 5) {
+                    setActiveTile(activeTileIndex - 5);
+                }
+            } else if (key === 'ARROWDOWN') {
+                if (activeTileIndex < 25) {
+                    setActiveTile(activeTileIndex + 5);
+                }
+            } else if (key.length === 1 && key >= 'A' && key <= 'Z') {
+                currentGuess[activeTileIndex - startOfRow] = key;
+                updateBoard();
+                if (activeTileIndex < endOfRow) {
+                    setActiveTile(activeTileIndex + 1);
+                }
+            }
+        }
+
+        document.addEventListener('keydown', (e) => {
+            const key = e.key.toUpperCase();
+            handleInput(key);
+        });
+
+        keyboard.addEventListener('click', (e) => {
+            const key = e.target.dataset.key;
+            if (key) {
+                handleInput(key);
+            }
+        });
+
+        newGameButton.addEventListener('click', resetGame);
+
+        initializeKeyboard();
+        resetGame();
+    </script>
+</body>
+</html>
