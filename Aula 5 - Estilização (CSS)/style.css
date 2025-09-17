@@ -1,0 +1,37 @@
+* {
+    margin: 0; /* Zera margens e paddings de todos os elementos */
+    padding: 0; /* Zera margens e paddings de todos os elementos */
+    box-sizing: border-box; /* Inclui padding e border na largura e altura totais dos elementos */
+}
+/* Estilização global para todos os elementos */
+
+
+.destaque {
+    color: blue;
+    font-weight: bold; /* Negrito */
+    
+}
+/* Estilização para a classe "destaque" */
+
+
+#titulo-principal {
+    text-align: center; /* Alinhamento do texto */
+    color: red;  /* Cor do texto */
+}
+/* Estilização para o elemento com ID "titulo-principal" */
+
+
+p {
+    font-size: 18px;    /* Tamanho da fonte */
+    line-height: 1.5; /* Espaçamento entre linhas */
+}
+/* Estilização para o elemento <p> */
+
+
+h1, h2, h3 {
+    font-family: 'Arial', sans-serif; /* Define a fonte para títulos */
+    color: darkgreen;
+    margin-bottom: 10px; /* Espaçamento abaixo dos títulos */
+}
+/* Estilização para os elementos <h1>, <h2> e <h3> COMPARTILHADO */
+
