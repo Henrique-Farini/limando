@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planos de Curso</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+
+            background: linear-gradient(to right, #6d6d6d, #ffffff);
+            color: white;
+        }
+
+        h1, h4 {
+            text-align: center;
+            font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+        }
+
+    
+        .container {
+            display: flex; 
+            justify-content: center; 
+            gap: 30px;          
+            margin-top: 50px;
+            flex-wrap: wrap;       
+        }
+
+        section {
+            display: flex; 
+            flex-direction: column; 
+            justify-content: space-between; 
+            align-items: center; 
+            
+            border-radius: 15px;
+            width: 250px;           
+          
+            height: 300px; 
+            padding: 20px; 
+            
+            background: rgba(0,0,0,0.6); 
+            color: white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); 
+            font-size: 16px;
+            font-weight: bold;
+            box-sizing: border-box;
+            transition: transform 0.2s ease-in-out;
+            border: 1px solid #060464; 
+        }
+        
+   
+        .curso-infantil, .curso-pre-adolescente, .curso-adultos {
+            padding: 10px; 
+            border-radius: 10px;
+            margin-bottom: 20px; 
+            font-size: 20px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            width: 100%; 
+            box-sizing: border-box; 
+        }
+
+      
+        .curso-infantil {
+             background-color: #3540dc; 
+        }
+        .curso-pre-adolescente {
+             background-color: #3540dc; 
+        }
+        .curso-adultos {
+             background-color: #3540dc; 
+        }
+
+        section p {
+            margin: 0; 
+            font-size: 20px;
+            font-weight: bold;
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+        }
+        
+
+        .preco {
+            font-size: 28px; 
+            color: rgb(255, 255, 255);
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+            margin-top: 10px;
+            font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+            
+          
+
+            
+        }
+        
+        h3 {
+            font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+            background-color: orange;
+            color: black; 
+            padding: 10px 20px; 
+            margin: 0;
+            text-align: center;
+            border-radius: 15px;
+            position: fixed; 
+            bottom: 20px;      
+            left: 50%;       
+            transform: translateX(-50%); 
+            z-index: 1000; 
+        }
+
+    </style>
+</head>
+<body>
+    <h1>Planos de Curso</h1>
+    <h4>Para todas as idades</h4>
+    <br><br>
+
+    <div class="container">
+        <section>
+            <div class="curso-infantil">
+            <p>Curso Infantil</p>
+            </div>
+            <h5>“Aprender inglês desde cedo é plantar uma semente que vai florescer para a vida toda.”</h5>
+            <p class="preco">R$149,90</p>
+        </section>
+
+        <section>
+            <div class="curso-pre-adolescente">
+            <p>Curso Pré-Adolescente</p>
+            </div>
+            <h5>“Inglês abre caminhos: intercâmbio, estudos, empregos e muito mais. Comece agora!”</h5>
+            <p class="preco">R$199,90</p>
+        </section>
+      
+        <section>
+            <div class="curso-adultos">
+            <p>Curso Adultos</p>
+            </div>
+            <h5>“Nunca é tarde para aprender inglês. Descubra o prazer de falar com o mundo!”</h5>
+            <p class="preco">R$249,90</p>
+        </section>
+    </div>
+    <img src="" alt="">
+    <br><br><br>
+    <h3>Entre em contato</h3>
+</body>
+</html>

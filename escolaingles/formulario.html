@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulariozinho</title>
+    <style>
+        body {
+            background-color: #f0f0f0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+        }
+
+        h2 {
+            text-align: center;
+            font-family: Arial, sans-serif;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 24px;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        form {
+            border: 2px solid black;
+            width: 500px;
+            padding: 10px;
+            margin: right;
+            background-color: rgb(57, 65, 215);
+            box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            font-size: 12px;
+            box-sizing: border-box;
+            height: min-content;
+        }
+
+        label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 6px;
+            box-sizing: border-box;
+            margin-top: 6px;
+            margin-bottom: 12px;
+            border: 1px solid #000000;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        input[type="radio"],
+        input[type="checkbox"] {
+            width: auto;
+            margin-right: 5px;
+            margin-left: 0;
+            cursor: pointer;
+            accent-color: rgb(47, 18, 235);
+        }
+
+        textarea {
+            resize: vertical;
+            height: 100px;
+        }
+
+        input[type="submit"],
+        input[type="reset"] {
+            background-color: #2242df;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 5px;
+            transition: 0.3s;
+        }
+
+        input[type="submit"]:hover,
+        input[type="reset"]:hover {
+            background-color: hsl(254, 87%, 58%);
+        }
+    </style>
+</head>
+<body>
+
+  <h2>Formulário</h2>
+            <form action="cadastro.php" method="post">
+                <p><label>Nome:</label>
+                    <input type="text" name="nome" placeholder="Digite seu nome" required>
+                </p>
+                <p><label>E-mail:</label>
+                    <input type="email" name="email" placeholder="sfgfd@sfdfs.com" required>
+                </p>
+                <p><label>Telefone:</label>
+                    <input type="text" name="telefone" pattern="\([0-9]{2}\) [0-9]{5}-[0-9]{4}" placeholder="(99) 99999-9999" maxlength="13" required title="Use o formato: (99) 99999-9999">
+                </p>
+                <p><labeL>CEP:</labeL>
+                    <input type="text" name="cep" pattern="[0-9]{5}-[0-9]{3}" placeholder="00000-000" maxlength="8" required title="Use o formato: 00000-000">
+                </p>                <p><label>Sobre você:</label>
+                    <textarea name="bio" rows="10" cols="100"></textarea>
+                </p>
+                <p><label>Gênero:</label>
+                    <input type="radio" name="genero" value="M">Masculino
+                    <input type="radio" name="genero" value="F">Feminino
+                    <input type="radio" name="genero" value="O">Outro
+
+            </select>
+                </p>
+                <p><label>Interesses:</label>
+                    <input type="checkbox" name="interesses" value="tecnologia">Espanhol
+                    <input type="checkbox" name="interesses" value="esporte">Mandarim
+                    <input type="checkbox" name="interesses" value="arte">Ingles
+                    <input type="checkbox" name="interesses" value="arte">Frances
+                </p>
+   
+            </form>
+</body>
+</html>
