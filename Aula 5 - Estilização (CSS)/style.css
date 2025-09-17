@@ -1,9 +1,9 @@
 * {
-    margin: 0; /* Zera margens e paddings de todos os elementos */
-    padding: 0; /* Zera margens e paddings de todos os elementos */
+    margin: auto; /*  margens e paddings de todos os elementos */
+    padding: 0; /* margens e paddings de todos os elementos */
     box-sizing: border-box; /* Inclui padding e border na largura e altura totais dos elementos */
 }
-/* Estilização global para todos os elementos */
+/* Estilização universal para todos os elementos - aplica a todos elementos */
 
 
 .destaque {
@@ -11,21 +11,21 @@
     font-weight: bold; /* Negrito */
     
 }
-/* Estilização para a classe "destaque" */
+/* Estilização .classe para "destaque" - .classe = Reutilizável em vários elementos */
 
 
 #titulo-principal {
     text-align: center; /* Alinhamento do texto */
     color: red;  /* Cor do texto */
 }
-/* Estilização para o elemento com ID "titulo-principal" */
+/* Estilização #id para o elemento com ID "titulo-principal" - Único, para um elemento específico */
 
 
 p {
     font-size: 18px;    /* Tamanho da fonte */
     line-height: 1.5; /* Espaçamento entre linhas */
 }
-/* Estilização para o elemento <p> */
+/* Estilização tag para o elemento <p>  - Altera todos os elementos daquela tag */
 
 
 h1, h2, h3 {
@@ -33,5 +33,44 @@ h1, h2, h3 {
     color: darkgreen;
     margin-bottom: 10px; /* Espaçamento abaixo dos títulos */
 }
-/* Estilização para os elementos <h1>, <h2> e <h3> COMPARTILHADO */
+/* Estilização para os elementos <h1>, <h2> e <h3> COMPARTILHADO - Agrupamento de seletores */
+
+
+.lorem {
+    color: hotpink;
+    font-style: bold; 
+    text-align: center; /* Alinhamento do texto */
+    line-height: 1.5; /* Espaçamento entre linhas */
+    word-spacing: 5px; /* Espaçamento entre palavras */
+    letter-spacing: 2px; /* Espaçamento entre letras */
+}
+
+.imagem1 {
+width: 190px;
+ height: 254px;
+ border-radius: 30px;
+ background: #212121;
+ box-shadow: 15px 15px 30px rgb(25, 25, 25),
+             -15px -15px 30px rgb(60, 60, 60);
+   
+    display: block;
+    margin-left: auto;
+    margin-top: 30px;
+   
+
+}
+
+ul {
+    list-style-type: square; /* Tipo de marcador */
+    padding-left: 20px; /* Espaçamento à esquerda */
+    color: purple; /* Cor do texto */
+    margin-top: auto;
+
+}
+
+ul li {
+    margin-bottom: 5px; /* Espaçamento entre itens da lista */
+}
+
+
 

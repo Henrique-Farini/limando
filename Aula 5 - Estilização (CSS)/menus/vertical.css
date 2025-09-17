@@ -1,0 +1,40 @@
+*{
+    margin: 0px;
+    padding: 0px;
+}
+ul {
+    background-color: #333; 
+    list-style: none; /* Remove marcadores padrão */
+    padding: 0px;
+    margin: 0px;
+    width: 200px;
+    display: block;
+    height: 100vh;
+
+}
+
+li {
+    float: center; /* Itens alinhados horizontalmente */
+    
+    
+}
+
+a {
+    display: block;
+    color: white; /* Cor do texto */
+    padding: 14px 16px; /* Espaçamento interno */
+    text-decoration: none; /* Remove sublinhado */
+ 
+}
+
+a:hover {
+    color: rgb(255, 255, 255);
+    background-color: brown;
+    position: relative;
+    opacity: 0.8;
+}
+a:not(:active):hover, 
+a:focus {
+    background-color: #21262c;
+}
+
